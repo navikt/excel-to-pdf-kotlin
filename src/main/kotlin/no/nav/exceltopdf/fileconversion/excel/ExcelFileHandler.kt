@@ -1,9 +1,7 @@
 package no.nav.exceltopdf.fileconversion.excel
 
 import org.apache.commons.collections4.IteratorUtils
-import org.apache.poi.ss.usermodel.CellType
-import org.apache.poi.ss.usermodel.CellValue
-import org.apache.poi.ss.usermodel.DateUtil
+import org.apache.poi.ss.usermodel.DataFormatter
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.xssf.usermodel.XSSFCell
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
@@ -11,8 +9,6 @@ import org.apache.poi.xssf.usermodel.XSSFRow
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.ByteArrayInputStream
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import org.apache.poi.ss.usermodel.Cell as POICell
 import org.apache.poi.ss.usermodel.Row as POIRow
 
@@ -53,29 +49,8 @@ object ExcelFileHandler {
         )
     }
 
-    private fun getDataFromCell(cell: POICell, evaluator: XSSFFormulaEvaluator): String {
-        val cellValue = runCatching { evaluator.evaluate(cell) ?: return "" }.getOrElse { return "Error" }
-        return when (cellValue.cellType) {
-            CellType.STRING -> cellValue.stringValue
-            CellType.NUMERIC -> processNumericCell(cell, cellValue)
-            CellType.BOOLEAN -> cellValue.booleanValue.toString()
-            CellType.BLANK -> ""
-            CellType.FORMULA -> cell.cellFormula
-            CellType.ERROR -> "error"
-            else -> throw IllegalArgumentException("Unknown cell type")
-        }
-    }
-
-    private fun processNumericCell(cell: POICell, cellValue: CellValue): String {
-        val isDateCell = DateUtil.isADateFormat(cell.cellStyle.dataFormat.toInt(), cell.cellStyle.dataFormatString)
-
-        return if (isDateCell) {
-            val toLocalDate = cell.localDateTimeCellValue.toLocalDate()
-            toLocalDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
-        } else {
-            cellValue.numberValue.toBigDecimal().toString()
-        }
-    }
+    private fun getDataFromCell(cell: POICell, evaluator: XSSFFormulaEvaluator): String =
+        runCatching { DataFormatter().formatCellValue(cell, evaluator) }.getOrElse { "Error" }
 }
 
 data class CellWithoutWidth(
