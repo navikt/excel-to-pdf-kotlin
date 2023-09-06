@@ -29,7 +29,7 @@ val pdfByteArray: byte[] = ExcelToPdfConverter.convertExcelToPdf(data)
 # Shortcomings
 
 * Only supports `.xlsx` files
-* Images in the Excel files are currently ignored
+* Images in the Excel files are ignored and left out
 * The sheet name or number is not included anywhere on the page of the resulting PDF.
 
 # Technologies:
