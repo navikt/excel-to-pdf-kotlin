@@ -35,7 +35,7 @@ internal class SheetToPageHandler(
         val rows = calculateRows(groupedColumns)
 
         rows.forEach { row ->
-            val rowHeight = row[0].height
+            val rowHeight = row.firstOrNull()?.height ?: 0f
             if (currentPdfPageSpec.currentYLocation < rowHeight) {
                 currentPdfPageSpec = addPage(rowHeight)
             }
@@ -146,14 +146,20 @@ internal class SheetToPageHandler(
 
     private fun orderRowsIntoColumns(): Map<Int, List<Cell>> {
         val columns = mutableMapOf<Int, MutableList<Cell>>()
-        sheetWrapper.rows.forEach { cells ->
-            cells.forEach {
-                val columnIndex = it.columnIndex
+        val longestRowLength = sheetWrapper.rows.maxOfOrNull { it.cells.size } ?: 0
+        sheetWrapper.rows.forEach { row ->
+            for (columnIndex in 0 until longestRowLength) {
+                val cellWithoutWidth = row.cells.find { it.columnIndex == columnIndex }
+                    ?: CellWithoutWidth(
+                        data = "",
+                        columnIndex = columnIndex,
+                        height = row.height
+                    )
                 val cell = Cell(
-                    data = it.data,
+                    data = cellWithoutWidth.data,
                     columnIndex = columnIndex,
-                    width = pdFont.widthInPoints(it.data, options.fontSize),
-                    height = it.height
+                    width = pdFont.widthInPoints(cellWithoutWidth.data, options.fontSize),
+                    height = cellWithoutWidth.height
                 )
                 if (columns[columnIndex] != null) {
                     columns[columnIndex]?.add(cell)
@@ -162,7 +168,7 @@ internal class SheetToPageHandler(
                 }
             }
         }
-        return columns
+        return columns.toSortedMap()
     }
 
     private fun splitStringIntoEvenLengthSubstrings(input: String, length: Int): List<String> {

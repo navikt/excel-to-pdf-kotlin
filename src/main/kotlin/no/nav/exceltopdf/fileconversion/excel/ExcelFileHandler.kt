@@ -32,13 +32,13 @@ object ExcelFileHandler {
             .toList()
     }
 
-    private fun processRows(rowIterator: Iterator<POIRow>, evaluator: XSSFFormulaEvaluator): List<RowWithoutWidth> {
+    private fun processRows(rowIterator: Iterator<POIRow>, evaluator: XSSFFormulaEvaluator): List<RowWrapper> {
         return IteratorUtils.toList(rowIterator)
-            .map { processCells(it.cellIterator(), evaluator, (it as XSSFRow).heightInPoints) }
+            .map { RowWrapper(processCells(it.cellIterator(), evaluator, (it as XSSFRow).heightInPoints), (it as XSSFRow).heightInPoints) }
             .toList()
     }
 
-    private fun processCells(cellIterator: Iterator<POICell>, evaluator: XSSFFormulaEvaluator, rowHeight: Float): RowWithoutWidth {
+    private fun processCells(cellIterator: Iterator<POICell>, evaluator: XSSFFormulaEvaluator, rowHeight: Float): List<CellWithoutWidth> {
         return IteratorUtils.toList(cellIterator)
             .map { createCellWrapper(it as XSSFCell, evaluator, rowHeight) }
             .toList()
@@ -84,10 +84,13 @@ data class CellWithoutWidth(
     val height: Float
 )
 
-typealias RowWithoutWidth = List<CellWithoutWidth>
+data class RowWrapper(
+    val cells: List<CellWithoutWidth>,
+    val height: Float
+)
 
 data class SheetWrapper(
-    val rows: List<RowWithoutWidth>,
+    val rows: List<RowWrapper>,
     val sheet: XSSFSheet
 )
 

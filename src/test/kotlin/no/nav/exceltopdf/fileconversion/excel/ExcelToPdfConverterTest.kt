@@ -20,7 +20,11 @@ class ExcelToPdfConverterTest {
             "wide.xlsx",
             "long.xlsx",
             "small-with-clipping-and-breaking.xlsx",
-            "formulas-and-two-sheets.xlsx",
+            "formulas-and-two-sheets.xlsx", // TODO bryt opp i to forskjellige. én for formler, én for flere sheets
+            "combined-cells-long.xlsx",
+            "combined-cells-short.xlsx",
+            "combined-cells-with-breaking.xlsx",
+            // TODO legg til en som håndterer error-celler
         ]
     )
     fun `should be able to convert Excel to PDF`(inputFileName: String, testInfo: TestInfo, @TempDir tempDir: Path) {
