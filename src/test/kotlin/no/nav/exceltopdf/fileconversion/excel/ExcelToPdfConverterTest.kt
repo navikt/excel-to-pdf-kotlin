@@ -27,6 +27,7 @@ class ExcelToPdfConverterTest {
             "cell-with-error.xlsx",
             "image-inside-cell.xlsx",
             "image-over-cells.xlsx",
+            "formats-and-styles.xlsx",
         ]
     )
     fun `should be able to convert Excel to PDF`(inputFileName: String, testInfo: TestInfo, @TempDir tempDir: Path) {
