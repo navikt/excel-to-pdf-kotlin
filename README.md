@@ -9,7 +9,35 @@ If an Excel sheet is too wide to fit on an A4 page, it
 will first take as many columns as fit the width of a page, finish writing all rows for those columns, then move to the
 next columns. If a column is wider than an entire page the column will span several lines.
 
-See `src/test/resources/examplefiles` for conversion examples.
+Given an Excel file that looks like this, let us assume that the first two columns take up almost the full width of an
+A4 page.
+
+| Month    | Budget | Spending | Sum  |
+|----------|--------|----------|------|
+| January  | 123    | 1        | 122  | 
+| February | 456    | 2        | 454  |
+| March    | 789    | 3        | 786  |
+| April    | 1337   | 4        | 1333 |
+
+The resulting PDF file would look something like this, where the lines denote the size of the A4 page.
+Note that all rows from the first two columns are all printed before moving on to the next columns and their rows.
+
+```
+---------------------------
+|  Month     Budget       |
+|  January   123          |
+|  February  456          |
+|  March     789          |
+|  April     1337         |
+|  Spending  Sum          |
+|  1         122          |
+|  2         454          |
+|  3         786          |
+|  4         1333         |
+---------------------------
+```
+
+See `src/test/resources/examplefiles` for examples with both input `.xlsx` files and output `.pdf` files.
 
 # Installation
 
