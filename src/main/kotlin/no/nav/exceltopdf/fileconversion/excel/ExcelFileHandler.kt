@@ -34,7 +34,7 @@ object ExcelFileHandler {
 
     private fun processRows(rowIterator: Iterator<POIRow>, evaluator: XSSFFormulaEvaluator): List<RowWrapper> {
         return IteratorUtils.toList(rowIterator)
-            .map { RowWrapper(processCells(it.cellIterator(), evaluator, (it as XSSFRow).heightInPoints), (it as XSSFRow).heightInPoints) }
+            .map { RowWrapper(processCells(it.cellIterator(), evaluator, (it as XSSFRow).heightInPoints), it.heightInPoints) }
             .toList()
     }
 
@@ -54,7 +54,7 @@ object ExcelFileHandler {
     }
 
     private fun getDataFromCell(cell: POICell, evaluator: XSSFFormulaEvaluator): String {
-        val cellValue = evaluator.evaluate(cell) ?: return ""
+        val cellValue = runCatching { evaluator.evaluate(cell) ?: return "" }.getOrElse { return "Error" }
         return when (cellValue.cellType) {
             CellType.STRING -> cellValue.stringValue
             CellType.NUMERIC -> processNumericCell(cell, cellValue)
