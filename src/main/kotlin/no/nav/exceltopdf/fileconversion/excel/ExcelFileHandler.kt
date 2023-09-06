@@ -1,11 +1,9 @@
 package no.nav.exceltopdf.fileconversion.excel
 
 import org.apache.commons.collections4.IteratorUtils
-import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.CellValue
 import org.apache.poi.ss.usermodel.DateUtil
-import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.xssf.usermodel.XSSFCell
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
@@ -15,6 +13,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.ByteArrayInputStream
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import org.apache.poi.ss.usermodel.Cell as POICell
+import org.apache.poi.ss.usermodel.Row as POIRow
 
 object ExcelFileHandler {
     fun getDataFromSource(source: ByteArray): List<SheetWrapper> {
@@ -32,26 +32,28 @@ object ExcelFileHandler {
             .toList()
     }
 
-    private fun processRows(rowIterator: Iterator<Row>, evaluator: XSSFFormulaEvaluator): List<RowWrapper> {
+    private fun processRows(rowIterator: Iterator<POIRow>, evaluator: XSSFFormulaEvaluator): List<RowWithoutWidth> {
         return IteratorUtils.toList(rowIterator)
-            .map { RowWrapper(processCells(it.cellIterator(), evaluator), it as XSSFRow) }
+            .map { processCells(it.cellIterator(), evaluator, (it as XSSFRow).heightInPoints) }
             .toList()
     }
 
-    private fun processCells(cellIterator: Iterator<Cell>, evaluator: XSSFFormulaEvaluator): List<CellWrapper> {
+    private fun processCells(cellIterator: Iterator<POICell>, evaluator: XSSFFormulaEvaluator, rowHeight: Float): RowWithoutWidth {
         return IteratorUtils.toList(cellIterator)
-            .map { createCellWrapper(it as XSSFCell, evaluator) }
+            .map { createCellWrapper(it as XSSFCell, evaluator, rowHeight) }
             .toList()
     }
 
-    private fun createCellWrapper(cell: XSSFCell, evaluator: XSSFFormulaEvaluator): CellWrapper {
-        return CellWrapper(
-            getDataFromCell(cell, evaluator),
-            cell
+    private fun createCellWrapper(cell: XSSFCell, evaluator: XSSFFormulaEvaluator, rowHeight: Float): CellWithoutWidth {
+        val data = getDataFromCell(cell, evaluator)
+        return CellWithoutWidth(
+            data = data,
+            columnIndex = cell.columnIndex,
+            height = rowHeight
         )
     }
 
-    private fun getDataFromCell(cell: Cell, evaluator: XSSFFormulaEvaluator): String {
+    private fun getDataFromCell(cell: POICell, evaluator: XSSFFormulaEvaluator): String {
         val cellValue = evaluator.evaluate(cell) ?: return ""
         return when (cellValue.cellType) {
             CellType.STRING -> cellValue.stringValue
@@ -64,7 +66,7 @@ object ExcelFileHandler {
         }
     }
 
-    private fun processNumericCell(cell: Cell, cellValue: CellValue): String {
+    private fun processNumericCell(cell: POICell, cellValue: CellValue): String {
         val isDateCell = DateUtil.isADateFormat(cell.cellStyle.dataFormat.toInt(), cell.cellStyle.dataFormatString)
 
         return if (isDateCell) {
@@ -76,21 +78,22 @@ object ExcelFileHandler {
     }
 }
 
+data class CellWithoutWidth(
+    val data: String,
+    val columnIndex: Int,
+    val height: Float
+)
+
+typealias RowWithoutWidth = List<CellWithoutWidth>
+
 data class SheetWrapper(
-    val rows: List<RowWrapper>,
+    val rows: List<RowWithoutWidth>,
     val sheet: XSSFSheet
 )
 
-data class RowWrapper(
-    val cells: List<CellWrapper>,
-    val row: XSSFRow
-)
-data class CellWrapper(
+data class Cell(
     val data: String,
-    val cell: XSSFCell
-)
-data class CellWrapperWrapper(
-    val cell: CellWrapper,
-    val cellWidth: Float,
-    val cellHeight: Float
+    val columnIndex: Int,
+    val width: Float,
+    val height: Float
 )

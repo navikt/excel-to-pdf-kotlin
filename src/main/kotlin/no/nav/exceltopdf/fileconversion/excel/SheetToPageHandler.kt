@@ -10,7 +10,7 @@ import java.io.ByteArrayInputStream
 import kotlin.math.ceil
 
 private data class Column(
-    val cells: List<CellWrapperWrapper>,
+    val cells: List<Cell>,
     val width: Float
 )
 
@@ -35,7 +35,7 @@ internal class SheetToPageHandler(
         val rows = calculateRows(groupedColumns)
 
         rows.forEach { row ->
-            val rowHeight = row[0].cellHeight
+            val rowHeight = row[0].height
             if (currentPdfPageSpec.currentYLocation < rowHeight) {
                 currentPdfPageSpec = addPage(rowHeight)
             }
@@ -46,7 +46,7 @@ internal class SheetToPageHandler(
 
     private fun groupColumns(
         columnGroups: List<List<Int>>,
-        columns: Map<Int, List<CellWrapperWrapper>>,
+        columns: Map<Int, List<Cell>>,
         widthByColumn: Map<Int, Float>
     ): List<List<Column>> {
         val groupedColumns = columnGroups.map { group ->
@@ -64,26 +64,26 @@ internal class SheetToPageHandler(
 
     private fun calculateRows(
         groupedColumns: List<List<Column>>
-    ): List<List<CellWrapperWrapper>> {
+    ): List<List<Cell>> {
         val maxPageWidth = currentPdfPageSpec.width
-        val rows = mutableListOf<List<CellWrapperWrapper>>()
+        val rows = mutableListOf<List<Cell>>()
 
         groupedColumns.forEach { columnGroup ->
             if (columnGroup.isNotEmpty()) {
                 val maxRowSize = columnGroup.maxOfOrNull { it.cells.size } ?: 0
                 for (rowNumber in 0 until maxRowSize) {
-                    val row = mutableListOf<CellWrapperWrapper>()
+                    val row = mutableListOf<Cell>()
                     columnGroup.forEach { column ->
                         try {
                             val cell = column.cells[rowNumber]
-                            val isTooWideForPage = cell.cellWidth > maxPageWidth
+                            val isTooWideForPage = cell.width > maxPageWidth
 
                             if (isTooWideForPage) {
                                 splitIntoSeveralRows(cell, maxPageWidth).forEach {
                                     rows.add(it)
                                 }
                             } else {
-                                row.add(cell.copy(cellWidth = column.width))
+                                row.add(cell.copy(width = column.width))
                             }
                         } catch (e: Throwable) {
                             // Fail silently. Not all rows have the same amount of columns.
@@ -99,30 +99,31 @@ internal class SheetToPageHandler(
     }
 
     private fun splitIntoSeveralRows(
-        celle: CellWrapperWrapper,
+        cell: Cell,
         maxPageWidth: Float
-    ): List<List<CellWrapperWrapper>> {
-        val rowsNeededForData = ceil(celle.cellWidth / maxPageWidth).toInt()
-        val charsPerRow = celle.cell.data.length / rowsNeededForData
-        val splitData = splitStringIntoEvenLengthSubstrings(celle.cell.data, charsPerRow)
+    ): List<List<Cell>> {
+        val rowsNeededForData = ceil(cell.width / maxPageWidth).toInt()
+        val charsPerRow = cell.data.length / rowsNeededForData
+        val splitData = splitStringIntoEvenLengthSubstrings(cell.data, charsPerRow)
         return splitData.map {
             listOf(
-                CellWrapperWrapper(
-                    cellWidth = maxPageWidth,
-                    cellHeight = celle.cellHeight,
-                    cell = CellWrapper(data = it, cell = celle.cell.cell)
+                Cell(
+                    data = it,
+                    width = maxPageWidth,
+                    height = cell.height,
+                    columnIndex = cell.columnIndex
                 )
             )
         }
     }
 
-    private fun calculateWidthByColumn(columns: Map<Int, List<CellWrapperWrapper>>): Map<Int, Float> {
+    private fun calculateWidthByColumn(columns: Map<Int, List<Cell>>): Map<Int, Float> {
         return columns.mapValues { (_, cells) ->
-            cells.maxOfOrNull { it.cellWidth } ?: 0f
+            cells.maxOfOrNull { it.width } ?: 0f
         }
     }
 
-    private fun calculateColumnGroups(columns: Map<Int, List<CellWrapperWrapper>>, widthByColumn: Map<Int, Float>): List<List<Int>> {
+    private fun calculateColumnGroups(columns: Map<Int, List<Cell>>, widthByColumn: Map<Int, Float>): List<List<Int>> {
         val maxPageWidth = currentPdfPageSpec.width
         val columnsByPage = mutableListOf<MutableList<Int>>()
         columns.forEach { (columnIndex) ->
@@ -143,21 +144,21 @@ internal class SheetToPageHandler(
         return columnsByPage
     }
 
-    private fun orderRowsIntoColumns(): Map<Int, List<CellWrapperWrapper>> {
-        val columns = mutableMapOf<Int, MutableList<CellWrapperWrapper>>()
-        sheetWrapper.rows.forEach { rowWrapper ->
-            val rowHeight = rowWrapper.row.heightInPoints
-            rowWrapper.cells.forEach {
-                val columnIndex = it.cell.columnIndex
-                val cellWrapperWrapper = CellWrapperWrapper(
-                    cell = it,
-                    cellWidth = pdFont.widthInPoints(it.data, options.fontSize),
-                    cellHeight = rowHeight
+    private fun orderRowsIntoColumns(): Map<Int, List<Cell>> {
+        val columns = mutableMapOf<Int, MutableList<Cell>>()
+        sheetWrapper.rows.forEach { cells ->
+            cells.forEach {
+                val columnIndex = it.columnIndex
+                val cell = Cell(
+                    data = it.data,
+                    columnIndex = columnIndex,
+                    width = pdFont.widthInPoints(it.data, options.fontSize),
+                    height = it.height
                 )
                 if (columns[columnIndex] != null) {
-                    columns[columnIndex]?.add(cellWrapperWrapper)
+                    columns[columnIndex]?.add(cell)
                 } else {
-                    columns[columnIndex] = mutableListOf(cellWrapperWrapper)
+                    columns[columnIndex] = mutableListOf(cell)
                 }
             }
         }
@@ -188,21 +189,21 @@ internal class SheetToPageHandler(
         currentContentStream = PDPageContentStream(document, page)
     }
 
-    private fun processRow(heightInPoints: Float, cells: List<CellWrapperWrapper>) {
+    private fun processRow(heightInPoints: Float, cells: List<Cell>) {
         with(currentPdfPageSpec) {
             currentYLocation -= heightInPoints
-            cells.forEach { processCell(it.cell, it.cellWidth) }
+            cells.forEach { processCell(it.data, it.width) }
             currentXLocation = options.lineStartFromEdge
         }
     }
 
-    private fun processCell(cellWrapper: CellWrapper, cellWidth: Float) {
+    private fun processCell(data: String, cellWidth: Float) {
         val tx = currentPdfPageSpec.currentXLocation + options.columnMargin
         with(currentContentStream) {
             beginText()
             newLineAtOffset(tx, currentPdfPageSpec.currentYLocation)
             setFont(pdFont, options.fontSize.toFloat())
-            showText(cellWrapper.data)
+            showText(data)
             endText()
         }
         currentPdfPageSpec.currentXLocation = tx + cellWidth
