@@ -174,10 +174,12 @@ internal class SheetToPageHandler(
 
         while (currentIndex < input.length) {
             val endIndex = currentIndex + length
-            if (endIndex <= input.length) {
-                val substring = input.substring(currentIndex, endIndex)
-                result.add(substring)
+            val substring = if (endIndex < input.length) {
+                input.substring(currentIndex, endIndex)
+            } else {
+                input.substring(currentIndex)
             }
+            result.add(substring)
             currentIndex = endIndex
         }
 
