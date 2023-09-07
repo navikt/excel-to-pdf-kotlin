@@ -79,7 +79,7 @@ The tests are written in JUnit 5 and are run on every build on Github Actions, b
 
 The tests use [pdfcompare](https://github.com/red6/pdfcompare) to compare input .xslx files to predefined .pdf files.
 If a test fails a PDF document showing the differences are written to the project root with the file name following the
-naming scheme `<test_name>-pdf-convert-test-result.pdf`.
+naming scheme `-testresult-<input_file_name>.pdf`.
 
 Adding a new test case is really simple. When adding new functionality you should consider adding another test case:
 1. Add an input `.xslx` file and an expected output `.pdf` file with the same name to `src/test/resources/examplefiles`

@@ -42,7 +42,7 @@ class ExcelToPdfConverterTest {
 
         val comparison = PdfComparator<CompareResultImpl>(expectedPdf, actualPdf).compare()
         if (comparison.isNotEqual) {
-            comparison.writeTo("${testInfo.displayName.replace(" ", "-")}-pdf-convert-test-result")
+            comparison.writeTo("testresult-${inputFileName.replace(".xlsx", "")}")
         }
         assertThat(comparison.isEqual).isTrue()
     }

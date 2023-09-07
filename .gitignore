@@ -14,4 +14,4 @@ src/generated
 .DS_Store
 
 #Test files
-*-pdf-convert-test-result*
+testresult-*.pdf
