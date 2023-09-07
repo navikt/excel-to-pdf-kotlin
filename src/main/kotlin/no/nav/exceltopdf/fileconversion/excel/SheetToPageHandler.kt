@@ -22,6 +22,7 @@ internal class SheetToPageHandler(
 ) {
     private var currentPdfPageSpec = PdfPageSpec(currentXLocation = options.lineStartFromEdge)
     private var currentContentStream = PDPageContentStream(document, currentPdfPageSpec.page)
+    private val maxPageContentWidth = currentPdfPageSpec.width - options.lineStartFromEdge
 
     private val pdFont = PDType0Font.load(document, ByteArrayInputStream(PdfFontUtil.getDefaultFontBytes()))
 
@@ -66,7 +67,6 @@ internal class SheetToPageHandler(
     private fun calculateRows(
         groupedColumns: List<List<Column>>,
     ): List<List<Cell>> {
-        val maxPageWidth = currentPdfPageSpec.width
         val rows = mutableListOf<List<Cell>>()
 
         groupedColumns.forEach { columnGroup ->
@@ -77,10 +77,10 @@ internal class SheetToPageHandler(
                     columnGroup.forEach { column ->
                         try {
                             val cell = column.cells[rowNumber]
-                            val isTooWideForPage = cell.width > maxPageWidth
+                            val isTooWideForPage = cell.width > maxPageContentWidth
 
                             if (isTooWideForPage) {
-                                splitIntoSeveralRows(cell, maxPageWidth).forEach {
+                                splitIntoSeveralRows(cell).forEach {
                                     rows.add(it)
                                 }
                             } else {
@@ -99,18 +99,15 @@ internal class SheetToPageHandler(
         return rows
     }
 
-    private fun splitIntoSeveralRows(
-        cell: Cell,
-        maxPageWidth: Float,
-    ): List<List<Cell>> {
-        val rowsNeededForData = ceil(cell.width / maxPageWidth).toInt()
+    private fun splitIntoSeveralRows(cell: Cell): List<List<Cell>> {
+        val rowsNeededForData = ceil(cell.width / maxPageContentWidth).toInt()
         val charsPerRow = cell.data.length / rowsNeededForData
         val splitData = splitStringIntoEvenLengthSubstrings(cell.data, charsPerRow)
         return splitData.map {
             listOf(
                 Cell(
                     data = it,
-                    width = maxPageWidth,
+                    width = maxPageContentWidth,
                     height = cell.height,
                     columnIndex = cell.columnIndex,
                 ),
@@ -125,7 +122,6 @@ internal class SheetToPageHandler(
     }
 
     private fun calculateColumnGroups(columns: Map<Int, List<Cell>>, widthByColumn: Map<Int, Float>): List<List<Int>> {
-        val maxPageWidth = currentPdfPageSpec.width
         val columnsByPage = mutableListOf<MutableList<Int>>()
         columns.forEach { (columnIndex) ->
             val lastPage = columnsByPage.lastOrNull()
@@ -135,7 +131,7 @@ internal class SheetToPageHandler(
                 val margin = options.columnMargin
                 val widthOfColumnsOnLastPage = lastPage.mapNotNull { widthByColumn[it]?.plus(margin) }.sum()
                 val widthOfCurrentColumn = widthByColumn[columnIndex]!! + margin
-                if (widthOfColumnsOnLastPage + widthOfCurrentColumn <= maxPageWidth) {
+                if (widthOfColumnsOnLastPage + widthOfCurrentColumn <= maxPageContentWidth) {
                     lastPage.add(columnIndex)
                 } else {
                     columnsByPage.add(mutableListOf(columnIndex))
