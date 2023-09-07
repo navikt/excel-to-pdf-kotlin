@@ -11,7 +11,7 @@ repositories {
 }
 
 plugins {
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.9.10"
     id("java")
     id("maven-publish")
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
