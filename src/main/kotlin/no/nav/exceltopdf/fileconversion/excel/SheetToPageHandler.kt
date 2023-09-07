@@ -2,6 +2,7 @@ package no.nav.exceltopdf.fileconversion.excel
 
 import no.nav.exceltopdf.fileconversion.PdfPageSpec
 import no.nav.exceltopdf.fileconversion.WritePdfPageOptions
+import no.nav.exceltopdf.util.PdfFontUtil
 import no.nav.exceltopdf.util.PdfFontUtil.widthInPoints
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -22,7 +23,7 @@ internal class SheetToPageHandler(
     private var currentPdfPageSpec = PdfPageSpec(currentXLocation = options.lineStartFromEdge)
     private var currentContentStream = PDPageContentStream(document, currentPdfPageSpec.page)
 
-    private val pdFont = PDType0Font.load(document, ByteArrayInputStream(options.fontByteArray))
+    private val pdFont = PDType0Font.load(document, ByteArrayInputStream(PdfFontUtil.getDefaultFontBytes()))
 
     fun writeSheetToDocument() {
         document.addPage(currentPdfPageSpec.page)
@@ -158,7 +159,7 @@ internal class SheetToPageHandler(
                 val cell = Cell(
                     data = cellWithoutWidth.data,
                     columnIndex = columnIndex,
-                    width = pdFont.widthInPoints(cellWithoutWidth.data, options.fontSize),
+                    width = pdFont.widthInPoints(cellWithoutWidth.data, currentPdfPageSpec.fontSize),
                     height = cellWithoutWidth.height,
                 )
                 if (columns[columnIndex] != null) {
@@ -208,7 +209,7 @@ internal class SheetToPageHandler(
         with(currentContentStream) {
             beginText()
             newLineAtOffset(tx, currentPdfPageSpec.currentYLocation)
-            setFont(pdFont, options.fontSize.toFloat())
+            setFont(pdFont, currentPdfPageSpec.fontSize.toFloat())
             showText(data)
             endText()
         }

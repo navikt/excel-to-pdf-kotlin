@@ -12,7 +12,7 @@ import java.io.ByteArrayInputStream
 import org.apache.poi.ss.usermodel.Cell as POICell
 import org.apache.poi.ss.usermodel.Row as POIRow
 
-object ExcelFileHandler {
+internal object ExcelFileHandler {
     fun getDataFromSource(source: ByteArray): List<SheetWrapper> {
         val byteArrayInputStream = ByteArrayInputStream(source)
         val workbook = XSSFWorkbook(byteArrayInputStream)
@@ -52,23 +52,23 @@ object ExcelFileHandler {
         runCatching { DataFormatter().formatCellValue(cell, evaluator) }.getOrElse { "Error" }
 }
 
-data class CellWithoutWidth(
+internal data class CellWithoutWidth(
     val data: String,
     val columnIndex: Int,
     val height: Float,
 )
 
-data class RowWrapper(
+internal data class RowWrapper(
     val cells: List<CellWithoutWidth>,
     val height: Float,
 )
 
-data class SheetWrapper(
+internal data class SheetWrapper(
     val rows: List<RowWrapper>,
     val sheet: XSSFSheet,
 )
 
-data class Cell(
+internal data class Cell(
     val data: String,
     val columnIndex: Int,
     val width: Float,

@@ -3,7 +3,7 @@ package no.nav.exceltopdf.util
 import org.apache.commons.io.IOUtils
 import org.apache.pdfbox.pdmodel.font.PDFont
 
-object PdfFontUtil {
+internal object PdfFontUtil {
 
     private const val FONTS_PATH = "fonts"
     private const val DEFAULT_FAMILY = "calibri"
