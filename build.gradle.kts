@@ -1,9 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 object Versions {
-    const val coroutines = "1.7.3"
-    const val slf4j = "2.0.9"
+    // Document reading and generation dependencies
+    const val apachePdfbox = "3.0.0"
+    const val apachePoi = "5.2.3"
+
+    // Test dependencies
     const val junitJupiter = "5.10.0"
+    const val assertJ = "3.24.2"
+    const val pdfCompare = "1.1.62"
 }
 
 repositories {
@@ -22,16 +27,14 @@ ktlint {
 }
 
 dependencies {
-    implementation(kotlin("reflect"))
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
-    api("org.slf4j:slf4j-api:${Versions.slf4j}")
+    // Document reading and generation dependencies
+    implementation("org.apache.pdfbox:pdfbox:${Versions.apachePdfbox}")
+    implementation("org.apache.poi:poi:${Versions.apachePoi}")
+    implementation("org.apache.poi:poi-ooxml:${Versions.apachePoi}")
 
-    implementation("org.apache.pdfbox:pdfbox:3.0.0")
-    implementation("org.apache.poi:poi:5.2.3")
-    implementation("org.apache.poi:poi-ooxml:5.2.3")
-
-    testImplementation("org.assertj:assertj-core:3.24.2")
-    testImplementation("de.redsix:pdfcompare:1.1.62")
+    // Test dependencies
+    testImplementation("org.assertj:assertj-core:${Versions.assertJ}")
+    testImplementation("de.redsix:pdfcompare:${Versions.pdfCompare}")
     testImplementation("org.junit.jupiter:junit-jupiter:${Versions.junitJupiter}")
 }
 
