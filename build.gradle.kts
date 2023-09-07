@@ -19,11 +19,11 @@ plugins {
     kotlin("jvm") version "1.9.10"
     id("java")
     id("maven-publish")
-    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
+    id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
 }
 
 ktlint {
-    this.version.set("0.45.2")
+    this.version.set("0.50.0")
 }
 
 dependencies {

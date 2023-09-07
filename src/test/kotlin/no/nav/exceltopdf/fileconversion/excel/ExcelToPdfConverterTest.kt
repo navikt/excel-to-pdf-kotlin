@@ -3,7 +3,6 @@ package no.nav.exceltopdf.fileconversion.excel
 import de.redsix.pdfcompare.CompareResultImpl
 import de.redsix.pdfcompare.PdfComparator
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -29,9 +28,9 @@ class ExcelToPdfConverterTest {
             "image-inside-cell.xlsx",
             "image-over-cells.xlsx",
             "formats-and-styles.xlsx",
-        ]
+        ],
     )
-    fun `should be able to convert Excel to PDF`(inputFileName: String, testInfo: TestInfo, @TempDir tempDir: Path) {
+    fun `should be able to convert Excel to PDF`(inputFileName: String, @TempDir tempDir: Path) {
         val expectedFileName = inputFileName.replace(".xlsx", ".pdf")
         val excelFileToConvert = getFile(inputFileName)
         val expectedPdf = getFile(expectedFileName)

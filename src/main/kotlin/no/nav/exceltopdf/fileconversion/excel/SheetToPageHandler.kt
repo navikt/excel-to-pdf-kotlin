@@ -11,13 +11,13 @@ import kotlin.math.ceil
 
 private data class Column(
     val cells: List<Cell>,
-    val width: Float
+    val width: Float,
 )
 
 internal class SheetToPageHandler(
     private val sheetWrapper: SheetWrapper,
     private val document: PDDocument,
-    private val options: WritePdfPageOptions
+    private val options: WritePdfPageOptions,
 ) {
     private var currentPdfPageSpec = PdfPageSpec(currentXLocation = options.lineStartFromEdge)
     private var currentContentStream = PDPageContentStream(document, currentPdfPageSpec.page)
@@ -47,14 +47,14 @@ internal class SheetToPageHandler(
     private fun groupColumns(
         columnGroups: List<List<Int>>,
         columns: Map<Int, List<Cell>>,
-        widthByColumn: Map<Int, Float>
+        widthByColumn: Map<Int, Float>,
     ): List<List<Column>> {
         val groupedColumns = columnGroups.map { group ->
             group.mapNotNull { columnIndex ->
                 columns[columnIndex]?.let {
                     Column(
                         cells = it,
-                        width = widthByColumn[columnIndex]!!
+                        width = widthByColumn[columnIndex]!!,
                     )
                 }
             }
@@ -63,7 +63,7 @@ internal class SheetToPageHandler(
     }
 
     private fun calculateRows(
-        groupedColumns: List<List<Column>>
+        groupedColumns: List<List<Column>>,
     ): List<List<Cell>> {
         val maxPageWidth = currentPdfPageSpec.width
         val rows = mutableListOf<List<Cell>>()
@@ -100,7 +100,7 @@ internal class SheetToPageHandler(
 
     private fun splitIntoSeveralRows(
         cell: Cell,
-        maxPageWidth: Float
+        maxPageWidth: Float,
     ): List<List<Cell>> {
         val rowsNeededForData = ceil(cell.width / maxPageWidth).toInt()
         val charsPerRow = cell.data.length / rowsNeededForData
@@ -111,8 +111,8 @@ internal class SheetToPageHandler(
                     data = it,
                     width = maxPageWidth,
                     height = cell.height,
-                    columnIndex = cell.columnIndex
-                )
+                    columnIndex = cell.columnIndex,
+                ),
             )
         }
     }
@@ -153,13 +153,13 @@ internal class SheetToPageHandler(
                     ?: CellWithoutWidth(
                         data = "",
                         columnIndex = columnIndex,
-                        height = row.height
+                        height = row.height,
                     )
                 val cell = Cell(
                     data = cellWithoutWidth.data,
                     columnIndex = columnIndex,
                     width = pdFont.widthInPoints(cellWithoutWidth.data, options.fontSize),
-                    height = cellWithoutWidth.height
+                    height = cellWithoutWidth.height,
                 )
                 if (columns[columnIndex] != null) {
                     columns[columnIndex]?.add(cell)

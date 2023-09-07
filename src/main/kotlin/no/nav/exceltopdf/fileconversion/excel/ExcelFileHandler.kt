@@ -14,7 +14,6 @@ import org.apache.poi.ss.usermodel.Row as POIRow
 
 object ExcelFileHandler {
     fun getDataFromSource(source: ByteArray): List<SheetWrapper> {
-
         val byteArrayInputStream = ByteArrayInputStream(source)
         val workbook = XSSFWorkbook(byteArrayInputStream)
         val evaluator = workbook.creationHelper.createFormulaEvaluator()
@@ -45,7 +44,7 @@ object ExcelFileHandler {
         return CellWithoutWidth(
             data = data,
             columnIndex = cell.columnIndex,
-            height = rowHeight
+            height = rowHeight,
         )
     }
 
@@ -56,22 +55,22 @@ object ExcelFileHandler {
 data class CellWithoutWidth(
     val data: String,
     val columnIndex: Int,
-    val height: Float
+    val height: Float,
 )
 
 data class RowWrapper(
     val cells: List<CellWithoutWidth>,
-    val height: Float
+    val height: Float,
 )
 
 data class SheetWrapper(
     val rows: List<RowWrapper>,
-    val sheet: XSSFSheet
+    val sheet: XSSFSheet,
 )
 
 data class Cell(
     val data: String,
     val columnIndex: Int,
     val width: Float,
-    val height: Float
+    val height: Float,
 )
