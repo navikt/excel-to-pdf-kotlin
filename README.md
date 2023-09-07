@@ -39,6 +39,14 @@ Note that all rows from the first two columns are all printed before moving on t
 
 See `src/test/resources/examplefiles` for examples with both input `.xlsx` files and output `.pdf` files.
 
+## Shortcomings
+
+* Only supports `.xlsx` files
+* Images, formatting, colors, styles, fonts and font sizes are all ignored
+* The sheet name and number is not included anywhere on the page
+* Does **not** aim to support all functionalities of Excel. See `src/test/resources/examplefiles` for input and output files of all tested and supported cases.
+
+
 # Installation
 
 **NOTE:** Requires JDK 17
@@ -54,16 +62,8 @@ val data: byte[] = yourExcelFileAsByteArray
 val pdfByteArray: byte[] = ExcelToPdfConverter.convertExcelToPdf(data)
 ```
 
-# Shortcomings
-
-* Only supports `.xlsx` files
-* Images, formatting, colors, styles, fonts and font sizes are all ignored
-* The sheet name and number is not included anywhere on the page
-* Does **not** aim to support all functionalities of Excel. See `src/test/resources/examplefiles` for input and output files of all tested and supported cases. 
-
 # Technologies:
 * Kotlin
-* Coroutines
 * JDK 17
 * Gradle
 * PDFBox
@@ -72,7 +72,7 @@ val pdfByteArray: byte[] = ExcelToPdfConverter.convertExcelToPdf(data)
 
 # Tests
 
-The tests are written in JUnit 5 and are run on every build on Github Actions, but can also be through IDEA or in the terminal using
+The tests are written in JUnit 5 and are run on every build on GitHub Actions, but can also be through IDEA or in the terminal using
 ```
 ./gradlew test
 ```
