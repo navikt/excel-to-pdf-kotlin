@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 object Versions {
     const val coroutines = "1.7.3"
-    const val slf4j = "1.7.36"
+    const val slf4j = "2.0.9"
     const val junitJupiter = "5.10.0"
 }
 
