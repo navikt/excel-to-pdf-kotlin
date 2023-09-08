@@ -5,8 +5,11 @@ excel-to-pdf-kotlin
 
 Kotlin utility for transforming an Excel file (`.xlsx`) to PDF.
 
-If an Excel sheet is too wide to fit on an A4 page, it
-will first take as many columns as fit the width of a page, finish writing all rows for those columns, then move to the
+The goal of this library is to not lose any data, even if it comes at the cost of formatting. When exporting an Excel
+file to PDF from Excel, the formatting is kept intact, meaning for example that the text in clipped cells are lost.
+
+Excel sheets can also be wider than an A4 page. If an Excel sheet is too wide to fit on an A4 page, the library will first take as many columns as fit the width of a page,
+finish writing all rows for those columns, then move to the
 next columns. If a column is wider than an entire page the column will span several lines.
 
 Given an Excel file that looks like this, let us assume that the first two columns take up almost the full width of an
