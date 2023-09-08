@@ -19,9 +19,13 @@ internal class SheetToPageHandler(
     private val document: PDDocument,
     private val options: WritePdfPageOptions,
 ) {
-    private var currentPdfPageSpec = PdfPageSpec(currentXLocation = options.lineStartFromEdge)
+    private var currentPdfPageSpec = PdfPageSpec(
+        currentXLocation = options.pageMarginLeft,
+        currentYLocation = options.pageMarginTop,
+    )
     private var currentContentStream = PDPageContentStream(document, currentPdfPageSpec.page)
-    private val maxPageContentWidth = currentPdfPageSpec.width - options.lineStartFromEdge - options.lineStartFromEdge
+    private val maxPageContentWidth = currentPdfPageSpec.width - options.pageMarginLeft - options.pageMarginRight
+    private val maxPageContentHeight = currentPdfPageSpec.height - options.pageMarginTop - options.pageMarginBottom
 
     private val pdFont = PDType0Font.load(document, ByteArrayInputStream(PdfFontUtil.getDefaultFontBytes()))
 
@@ -37,8 +41,8 @@ internal class SheetToPageHandler(
 
         rows.forEach { row ->
             val rowHeight = row.firstOrNull()?.height ?: 0f
-            if (currentPdfPageSpec.currentYLocation < rowHeight) {
-                currentPdfPageSpec = addPage(rowHeight)
+            if ((currentPdfPageSpec.currentYLocation + rowHeight) > maxPageContentHeight) {
+                currentPdfPageSpec = addPage()
             }
             processRow(rowHeight, row)
         }
@@ -204,8 +208,10 @@ internal class SheetToPageHandler(
         return splitToLinesNoWiderThanPageWidth(words)
     }
 
-    private fun addPage(rowHeight: Float) = PdfPageSpec(currentXLocation = options.lineStartFromEdge).apply {
-        currentYLocation -= rowHeight
+    private fun addPage() = PdfPageSpec(
+        currentXLocation = options.pageMarginLeft,
+        currentYLocation = options.pageMarginTop,
+    ).apply {
         document.addPage(page)
 
         currentContentStream.close()
@@ -214,9 +220,9 @@ internal class SheetToPageHandler(
 
     private fun processRow(heightInPoints: Float, cells: List<Cell>) {
         with(currentPdfPageSpec) {
-            currentYLocation -= heightInPoints
+            currentYLocation += heightInPoints
             cells.forEach { processCell(it.data, it.width) }
-            currentXLocation = options.lineStartFromEdge
+            currentXLocation = options.pageMarginLeft
         }
     }
 
@@ -224,7 +230,7 @@ internal class SheetToPageHandler(
         val tx = currentPdfPageSpec.currentXLocation + options.columnMargin
         with(currentContentStream) {
             beginText()
-            newLineAtOffset(tx, currentPdfPageSpec.currentYLocation)
+            newLineAtOffset(tx, currentPdfPageSpec.height - currentPdfPageSpec.currentYLocation)
             setFont(pdFont, currentPdfPageSpec.fontSize.toFloat())
             showText(data)
             endText()
