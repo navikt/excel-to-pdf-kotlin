@@ -8,7 +8,6 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPageContentStream
 import org.apache.pdfbox.pdmodel.font.PDType0Font
 import java.io.ByteArrayInputStream
-import kotlin.math.ceil
 
 private data class Column(
     val cells: List<Cell>,
@@ -22,7 +21,7 @@ internal class SheetToPageHandler(
 ) {
     private var currentPdfPageSpec = PdfPageSpec(currentXLocation = options.lineStartFromEdge)
     private var currentContentStream = PDPageContentStream(document, currentPdfPageSpec.page)
-    private val maxPageContentWidth = currentPdfPageSpec.width - options.lineStartFromEdge
+    private val maxPageContentWidth = currentPdfPageSpec.width - options.lineStartFromEdge - options.lineStartFromEdge
 
     private val pdFont = PDType0Font.load(document, ByteArrayInputStream(PdfFontUtil.getDefaultFontBytes()))
 
@@ -80,9 +79,7 @@ internal class SheetToPageHandler(
                             val isTooWideForPage = cell.width > maxPageContentWidth
 
                             if (isTooWideForPage) {
-                                splitIntoSeveralRows(cell).forEach {
-                                    rows.add(it)
-                                }
+                                rows.addAll(splitIntoSeveralRows(cell))
                             } else {
                                 row.add(cell.copy(width = column.width))
                             }
@@ -100,9 +97,7 @@ internal class SheetToPageHandler(
     }
 
     private fun splitIntoSeveralRows(cell: Cell): List<List<Cell>> {
-        val rowsNeededForData = ceil(cell.width / maxPageContentWidth).toInt()
-        val charsPerRow = cell.data.length / rowsNeededForData
-        val splitData = splitStringIntoEvenLengthSubstrings(cell.data, charsPerRow)
+        val splitData = splitCellIntoLines(cell.data)
         return splitData.map {
             listOf(
                 Cell(
@@ -155,7 +150,7 @@ internal class SheetToPageHandler(
                 val cell = Cell(
                     data = cellWithoutWidth.data,
                     columnIndex = columnIndex,
-                    width = pdFont.widthInPoints(cellWithoutWidth.data, currentPdfPageSpec.fontSize),
+                    width = widthInPoints(cellWithoutWidth.data),
                     height = cellWithoutWidth.height,
                 )
                 if (columns[columnIndex] != null) {
@@ -168,22 +163,45 @@ internal class SheetToPageHandler(
         return columns.toSortedMap()
     }
 
-    private fun splitStringIntoEvenLengthSubstrings(input: String, length: Int): List<String> {
+    private fun widthInPoints(text: String): Float = pdFont.widthInPoints(text, currentPdfPageSpec.fontSize)
+
+    private fun splitToLinesNoWiderThanPageWidth(input: List<String>, addSpaceBetweenEntriesInLine: Boolean = true): List<String> {
         val result = mutableListOf<String>()
-        var currentIndex = 0
+        var line = ""
+        var lineWidth = 0f
 
-        while (currentIndex < input.length) {
-            val endIndex = currentIndex + length
-            val substring = if (endIndex < input.length) {
-                input.substring(currentIndex, endIndex)
-            } else {
-                input.substring(currentIndex)
+        for (lol in input) {
+            val text = lol.let {
+                if (addSpaceBetweenEntriesInLine && line.isNotEmpty()) " $it" else it
             }
-            result.add(substring)
-            currentIndex = endIndex
+            val wordWidth = widthInPoints(text)
+            val lineWidthWithCurrentWord = lineWidth + wordWidth
+            if (wordWidth > maxPageContentWidth) {
+                result.addAll(splitWordIntoLinesNoWiderThanPageWidth(text))
+            } else if (lineWidthWithCurrentWord <= maxPageContentWidth) {
+                line += text
+                lineWidth = lineWidthWithCurrentWord
+            } else {
+                result.add(line)
+                line = text
+                lineWidth = wordWidth
+            }
         }
-
+        if (line.isNotEmpty() && line.isNotBlank()) {
+            result.add(line)
+        }
         return result
+    }
+
+    private fun splitWordIntoLinesNoWiderThanPageWidth(input: String): List<String> {
+        val characters = input.split("")
+
+        return splitToLinesNoWiderThanPageWidth(characters, false)
+    }
+
+    private fun splitCellIntoLines(input: String): List<String> {
+        val words = input.split("\\s+".toRegex())
+        return splitToLinesNoWiderThanPageWidth(words)
     }
 
     private fun addPage(rowHeight: Float) = PdfPageSpec(currentXLocation = options.lineStartFromEdge).apply {
