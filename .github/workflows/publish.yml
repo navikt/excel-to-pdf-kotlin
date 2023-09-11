@@ -1,4 +1,4 @@
-name: Build and publish
+name: Publish package to GitHub Packages
 
 on:
   push:
@@ -9,6 +9,9 @@ jobs:
   build:
     name: Build and push
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
