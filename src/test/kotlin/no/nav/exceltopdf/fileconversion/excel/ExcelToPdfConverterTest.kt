@@ -18,6 +18,7 @@ class ExcelToPdfConverterTest {
             "tiny.xlsx",
             "wide.xlsx",
             "long.xlsx",
+            "tall-row.xlsx",
             "small-with-clipping-and-breaking.xlsx",
             "two-sheets.xlsx",
             "formulas.xlsx",

@@ -149,13 +149,12 @@ internal class SheetToPageHandler(
                     ?: CellWithoutWidth(
                         data = "",
                         columnIndex = columnIndex,
-                        height = row.height,
                     )
                 val cell = Cell(
                     data = cellWithoutWidth.data,
                     columnIndex = columnIndex,
                     width = widthInPoints(cellWithoutWidth.data),
-                    height = cellWithoutWidth.height,
+                    height = options.fontSize.toFloat(),
                 )
                 if (columns[columnIndex] != null) {
                     columns[columnIndex]?.add(cell)
@@ -167,7 +166,7 @@ internal class SheetToPageHandler(
         return columns.toSortedMap()
     }
 
-    private fun widthInPoints(text: String): Float = pdFont.widthInPoints(text, currentPdfPageSpec.fontSize)
+    private fun widthInPoints(text: String): Float = pdFont.widthInPoints(text, options.fontSize)
 
     private fun splitToLinesNoWiderThanPageWidth(input: List<String>, addSpaceBetweenEntriesInLine: Boolean = true): List<String> {
         val result = mutableListOf<String>()
@@ -231,7 +230,7 @@ internal class SheetToPageHandler(
         with(currentContentStream) {
             beginText()
             newLineAtOffset(tx, currentPdfPageSpec.height - currentPdfPageSpec.currentYLocation)
-            setFont(pdFont, currentPdfPageSpec.fontSize.toFloat())
+            setFont(pdFont, options.fontSize.toFloat())
             showText(data)
             endText()
         }

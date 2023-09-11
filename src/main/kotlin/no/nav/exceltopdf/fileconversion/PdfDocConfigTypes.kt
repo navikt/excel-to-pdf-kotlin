@@ -9,13 +9,13 @@ class WritePdfPageOptions(
     val pageMarginTop: Float = 5f,
     val pageMarginBottom: Float = 10f,
     val columnMargin: Float = 10f,
+    val fontSize: Short = 11,
 )
 
 data class PdfPageSpec(
     val page: PDPage = PDPage(PDRectangle.A4),
     val width: Float = page.cropBox.width,
     val height: Float = page.cropBox.height,
-    var fontSize: Short = 11,
     var currentXLocation: Float,
     var currentYLocation: Float,
 )
