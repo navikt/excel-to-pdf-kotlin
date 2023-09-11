@@ -1,5 +1,3 @@
-[![Publish artifacts](https://github.com/navikt/excel-to-pdf-kotlin/actions/workflows/release.yml/badge.svg)](https://github.com/navikt/excel-to-pdf-kotlin/actions/workflows/release.yml)
-
 excel-to-pdf-kotlin
 ================
 
