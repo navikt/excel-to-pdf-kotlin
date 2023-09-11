@@ -1,5 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+group = "no.nav.exceltopdf"
+version = "0.1.0"
+
 object Versions {
     // Document reading and generation dependencies
     const val apachePdfbox = "3.0.0"
@@ -47,5 +50,22 @@ tasks {
 
     withType<Test> {
         useJUnitPlatform()
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/navikt/excel-to-pdf-kotlin")
+            credentials {
+                username = "x-access-token"
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("gpr") {
+            from(components["java"])
+        }
     }
 }
