@@ -1,4 +1,4 @@
-package no.nav.exceltopdf.fileconversion.exception
+package no.nav.exceltopdf
 
 class ExcelConversionException(
     override val message: String?,

@@ -1,4 +1,4 @@
-package no.nav.exceltopdf.fileconversion.excel
+package no.nav.exceltopdf
 
 import de.redsix.pdfcompare.CompareResultImpl
 import de.redsix.pdfcompare.PdfComparator

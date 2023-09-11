@@ -1,7 +1,5 @@
-package no.nav.exceltopdf.fileconversion.excel
+package no.nav.exceltopdf
 
-import no.nav.exceltopdf.fileconversion.WritePdfPageOptions
-import no.nav.exceltopdf.fileconversion.exception.ExcelConversionException
 import org.apache.pdfbox.pdmodel.PDDocument
 import java.io.ByteArrayOutputStream
 
@@ -17,11 +15,11 @@ object ExcelToPdfConverter {
     fun convertExcelToPdf(source: ByteArray, options: WritePdfPageOptions = WritePdfPageOptions()): ByteArray {
         try {
             val doc = PDDocument()
-            val sheets = ExcelFileHandler.getDataFromSource(source)
+            val sheets = ExcelFileReader.getDataFromSource(source)
 
             sheets.forEach { sheetWrapper ->
                 if (sheetWrapper.rows.isNotEmpty()) {
-                    SheetToPageHandler(sheetWrapper, doc, options).writeSheetToDocument()
+                    SheetToDocumentWriter(sheetWrapper, doc, options).writeSheetToDocument()
                 }
             }
 

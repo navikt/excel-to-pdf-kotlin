@@ -1,7 +1,5 @@
-package no.nav.exceltopdf.fileconversion.excel
+package no.nav.exceltopdf
 
-import no.nav.exceltopdf.fileconversion.PdfPageSpec
-import no.nav.exceltopdf.fileconversion.WritePdfPageOptions
 import no.nav.exceltopdf.util.PdfFontUtil
 import no.nav.exceltopdf.util.PdfFontUtil.widthInPoints
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -14,7 +12,7 @@ private data class Column(
     val width: Float,
 )
 
-internal class SheetToPageHandler(
+internal class SheetToDocumentWriter(
     private val sheetWrapper: SheetWrapper,
     private val document: PDDocument,
     private val options: WritePdfPageOptions,

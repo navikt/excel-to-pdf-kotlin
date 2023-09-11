@@ -1,4 +1,4 @@
-package no.nav.exceltopdf.fileconversion.excel
+package no.nav.exceltopdf
 
 import org.apache.commons.collections4.IteratorUtils
 import org.apache.poi.ss.usermodel.DataFormatter
@@ -11,7 +11,7 @@ import java.io.ByteArrayInputStream
 import org.apache.poi.ss.usermodel.Cell as POICell
 import org.apache.poi.ss.usermodel.Row as POIRow
 
-internal object ExcelFileHandler {
+internal object ExcelFileReader {
     fun getDataFromSource(source: ByteArray): List<SheetWrapper> {
         val byteArrayInputStream = ByteArrayInputStream(source)
         val workbook = XSSFWorkbook(byteArrayInputStream)
@@ -49,24 +49,3 @@ internal object ExcelFileHandler {
     private fun getDataFromCell(cell: POICell, evaluator: XSSFFormulaEvaluator): String =
         runCatching { DataFormatter().formatCellValue(cell, evaluator) }.getOrElse { "Error" }
 }
-
-internal data class CellWithoutWidth(
-    val data: String,
-    val columnIndex: Int,
-)
-
-internal data class RowWrapper(
-    val cells: List<CellWithoutWidth>,
-)
-
-internal data class SheetWrapper(
-    val rows: List<RowWrapper>,
-    val sheet: XSSFSheet,
-)
-
-internal data class Cell(
-    val data: String,
-    val columnIndex: Int,
-    val width: Float,
-    val height: Float,
-)
