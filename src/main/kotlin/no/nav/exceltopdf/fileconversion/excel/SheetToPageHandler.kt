@@ -168,19 +168,19 @@ internal class SheetToPageHandler(
 
     private fun widthInPoints(text: String): Float = pdFont.widthInPoints(text, options.fontSize)
 
-    private fun splitToLinesNoWiderThanPageWidth(input: List<String>, addSpaceBetweenEntriesInLine: Boolean = true): List<String> {
+    private fun mergeToLines(inputs: List<String>, addSpaceBetweenEntriesInLine: Boolean): List<String> {
         val result = mutableListOf<String>()
         var line = ""
         var lineWidth = 0f
 
-        for (lol in input) {
-            val text = lol.let {
+        for (input in inputs) {
+            val text = input.let {
                 if (addSpaceBetweenEntriesInLine && line.isNotEmpty()) " $it" else it
             }
             val wordWidth = widthInPoints(text)
             val lineWidthWithCurrentWord = lineWidth + wordWidth
             if (wordWidth > maxPageContentWidth) {
-                result.addAll(splitWordIntoLinesNoWiderThanPageWidth(text))
+                result.addAll(splitWordIntoLines(text))
             } else if (lineWidthWithCurrentWord <= maxPageContentWidth) {
                 line += text
                 lineWidth = lineWidthWithCurrentWord
@@ -196,15 +196,15 @@ internal class SheetToPageHandler(
         return result
     }
 
-    private fun splitWordIntoLinesNoWiderThanPageWidth(input: String): List<String> {
+    private fun splitWordIntoLines(input: String): List<String> {
         val characters = input.split("")
 
-        return splitToLinesNoWiderThanPageWidth(characters, false)
+        return mergeToLines(inputs = characters, addSpaceBetweenEntriesInLine = false)
     }
 
     private fun splitCellIntoLines(input: String): List<String> {
         val words = input.split("\\s+".toRegex())
-        return splitToLinesNoWiderThanPageWidth(words)
+        return mergeToLines(inputs = words, addSpaceBetweenEntriesInLine = true)
     }
 
     private fun addPage() = PdfPageSpec(
