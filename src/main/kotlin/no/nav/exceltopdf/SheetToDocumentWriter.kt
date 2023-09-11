@@ -15,15 +15,20 @@ private data class Column(
 internal class SheetToDocumentWriter(
     private val sheetWrapper: SheetWrapper,
     private val document: PDDocument,
-    private val options: WritePdfPageOptions,
+    private val fontSize: Short,
+    private val columnMargin: Float,
+    private val pageMarginLeft: Float,
+    private val pageMarginTop: Float,
+    pageMarginRight: Float,
+    pageMarginBottom: Float,
 ) {
     private var currentPdfPageSpec = PdfPageSpec(
-        currentXLocation = options.pageMarginLeft,
-        currentYLocation = options.pageMarginTop,
+        currentXLocation = pageMarginLeft,
+        currentYLocation = pageMarginTop,
     )
     private var currentContentStream = PDPageContentStream(document, currentPdfPageSpec.page)
-    private val maxPageContentWidth = currentPdfPageSpec.width - options.pageMarginLeft - options.pageMarginRight
-    private val maxPageContentHeight = currentPdfPageSpec.height - options.pageMarginTop - options.pageMarginBottom
+    private val maxPageContentWidth = currentPdfPageSpec.width - pageMarginLeft - pageMarginRight
+    private val maxPageContentHeight = currentPdfPageSpec.height - pageMarginTop - pageMarginBottom
 
     private val pdFont = PDType0Font.load(document, ByteArrayInputStream(PdfFontUtil.getDefaultFontBytes()))
 
@@ -125,7 +130,7 @@ internal class SheetToDocumentWriter(
             if (lastPage == null) {
                 columnsByPage.add(mutableListOf(columnIndex))
             } else {
-                val margin = options.columnMargin
+                val margin = columnMargin
                 val widthOfColumnsOnLastPage = lastPage.mapNotNull { widthByColumn[it]?.plus(margin) }.sum()
                 val widthOfCurrentColumn = widthByColumn[columnIndex]!! + margin
                 if (widthOfColumnsOnLastPage + widthOfCurrentColumn <= maxPageContentWidth) {
@@ -152,7 +157,7 @@ internal class SheetToDocumentWriter(
                     data = cellWithoutWidth.data,
                     columnIndex = columnIndex,
                     width = widthInPoints(cellWithoutWidth.data),
-                    height = options.fontSize.toFloat(),
+                    height = fontSize.toFloat(),
                 )
                 if (columns[columnIndex] != null) {
                     columns[columnIndex]?.add(cell)
@@ -164,7 +169,7 @@ internal class SheetToDocumentWriter(
         return columns.toSortedMap()
     }
 
-    private fun widthInPoints(text: String): Float = pdFont.widthInPoints(text, options.fontSize)
+    private fun widthInPoints(text: String): Float = pdFont.widthInPoints(text, fontSize)
 
     private fun mergeToLines(inputs: List<String>, addSpaceBetweenEntriesInLine: Boolean): List<String> {
         val result = mutableListOf<String>()
@@ -206,8 +211,8 @@ internal class SheetToDocumentWriter(
     }
 
     private fun addPage() = PdfPageSpec(
-        currentXLocation = options.pageMarginLeft,
-        currentYLocation = options.pageMarginTop,
+        currentXLocation = pageMarginLeft,
+        currentYLocation = pageMarginTop,
     ).apply {
         document.addPage(page)
 
@@ -219,16 +224,16 @@ internal class SheetToDocumentWriter(
         with(currentPdfPageSpec) {
             currentYLocation += heightInPoints
             cells.forEach { processCell(it.data, it.width) }
-            currentXLocation = options.pageMarginLeft
+            currentXLocation = pageMarginLeft
         }
     }
 
     private fun processCell(data: String, cellWidth: Float) {
-        val tx = currentPdfPageSpec.currentXLocation + options.columnMargin
+        val tx = currentPdfPageSpec.currentXLocation + columnMargin
         with(currentContentStream) {
             beginText()
             newLineAtOffset(tx, currentPdfPageSpec.height - currentPdfPageSpec.currentYLocation)
-            setFont(pdFont, options.fontSize.toFloat())
+            setFont(pdFont, fontSize.toFloat())
             showText(data)
             endText()
         }

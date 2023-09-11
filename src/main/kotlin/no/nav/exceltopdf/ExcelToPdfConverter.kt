@@ -12,14 +12,31 @@ object ExcelToPdfConverter {
      *        A ByteArray representation of the Excel file that should be converted
      * @return A ByteArray representation of the resulting PDF file
      */
-    fun convertExcelToPdf(source: ByteArray, options: WritePdfPageOptions = WritePdfPageOptions()): ByteArray {
+    fun convertExcelToPdf(
+        source: ByteArray,
+        fontSize: Short = 11,
+        columnMargin: Float = 10f,
+        pageMarginLeft: Float = 10f,
+        pageMarginRight: Float = 10f,
+        pageMarginTop: Float = 5f,
+        pageMarginBottom: Float = 10f,
+    ): ByteArray {
         try {
             val doc = PDDocument()
             val sheets = ExcelFileReader.getDataFromSource(source)
 
             sheets.forEach { sheetWrapper ->
                 if (sheetWrapper.rows.isNotEmpty()) {
-                    SheetToDocumentWriter(sheetWrapper, doc, options).writeSheetToDocument()
+                    SheetToDocumentWriter(
+                        sheetWrapper = sheetWrapper,
+                        document = doc,
+                        fontSize = fontSize,
+                        columnMargin = columnMargin,
+                        pageMarginLeft = pageMarginLeft,
+                        pageMarginRight = pageMarginRight,
+                        pageMarginTop = pageMarginTop,
+                        pageMarginBottom = pageMarginBottom,
+                    ).writeSheetToDocument()
                 }
             }
 

@@ -60,9 +60,24 @@ See `src/test/resources/examplefiles` for examples with both input `.xlsx` files
 
 # Usage
 
+The only required parameter is `source` of type `ByteArray`:
+```kotlin
+val source: ByteArray = yourExcelFileAsByteArray
+val pdfByteArray: ByteArray = ExcelToPdfConverter.convertExcelToPdf(source = source)
 ```
-val data: byte[] = yourExcelFileAsByteArray
-val pdfByteArray: byte[] = ExcelToPdfConverter.convertExcelToPdf(data)
+
+There are also several optional parameters you can pass to configure the PDF result:
+```kotlin
+val source: ByteArray = yourExcelFileAsByteArray
+val pdfByteArray: ByteArray = ExcelToPdfConverter.convertExcelToPdf(
+  source = source,
+  fontSize = 11,
+  columnMargin = 5f,
+  pageMarginLeft = 10f,
+  pageMarginRight = 10f,
+  pageMarginTop = 10f,
+  pageMarginBottom = 10f,
+)
 ```
 
 # Technologies:
@@ -96,7 +111,7 @@ How to run Ktlint:
     * Format and build: `./gradlew ktlintFormat build`
 * Troubleshooting if IDEA starts complaining `./gradlew clean ktlintFormat build`
 
-Change IDEA autoformat configuratino for this project:
+Change IDEA autoformat configuration for this project:
 * `./gradlew ktlintApplyToIdea`
 
 Add pre-commit check/format hooks:

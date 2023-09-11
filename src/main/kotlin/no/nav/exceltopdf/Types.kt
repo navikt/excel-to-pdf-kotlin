@@ -4,15 +4,6 @@ import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.poi.xssf.usermodel.XSSFSheet
 
-class WritePdfPageOptions(
-    val pageMarginLeft: Float = 10f,
-    val pageMarginRight: Float = 10f,
-    val pageMarginTop: Float = 5f,
-    val pageMarginBottom: Float = 10f,
-    val columnMargin: Float = 10f,
-    val fontSize: Short = 11,
-)
-
 internal data class PdfPageSpec(
     val page: PDPage = PDPage(PDRectangle.A4),
     val width: Float = page.cropBox.width,
