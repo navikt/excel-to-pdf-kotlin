@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.exceltopdf"
-version = "0.1.0"
+version = "0.1.1"
 
 object Versions {
     // Document reading and generation dependencies
